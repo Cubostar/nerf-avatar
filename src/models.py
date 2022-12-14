@@ -4,6 +4,46 @@ from typing import Optional, Tuple
 
 
 
+class FourierEncoder(nn.Module):
+    """
+    Fourier positional encoder for input points.
+    Inputs are:
+    d_input (int) : dimension of input
+    n_feats (int) : number of frequencies
+    sigma (float) : standard deviation of random Fourier feature matrix
+    Outputs are:
+    features (torch.Tensor) : input but increased feature dimension from d_input to (2 * n_feats) + d_input,
+    since there's sine and cosine, and then the original input.
+    """
+    def __init__(
+        self,
+        d_input: int,
+        n_feats: int,
+        sigma: float = 1.0
+    ):
+        super().__init__()
+        self.d_input = d_input
+        self.n_feats = n_feats
+        self.d_output = d_input * (1 + 2 * self.n_feats)
+        self.sigma = sigma
+
+        # Create random Fourier feature matrix
+        self.B = torch.from_numpy(np.random.normal(scale=sigma, size=(n_feats, d_input))).float()
+
+  
+    def forward(
+        self,
+        x
+    ) -> torch.Tensor:
+        """
+        Apply positional encoding to input.
+        """
+        Bx = torch.concat([torch.t(torch.matmul(self.B, torch.t(x[i, None]))) for i in range(x.shape[0])])
+        print(Bx.shape)
+        return torch.concat([x, torch.cos(2*np.pi*Bx), torch.sin(2*np.pi*Bx)], dim=-1)
+
+
+
 class PositionalEncoder(nn.Module):
     """
     Sine-cosine positional encoder for input points.
@@ -146,3 +186,29 @@ if __name__ == '__main__':
 
     encoded_points = encoder(pts_flattened)
     encoded_viewdirs = viewdirs_encoder(flattened_viewdirs)
+
+    print('Positionally Encoded Points')
+    print(encoded_points.shape)
+    print(torch.min(encoded_points), torch.max(encoded_points), torch.mean(encoded_points))
+    print('')
+
+    print(encoded_viewdirs.shape)
+    print('Positionally Encoded Viewdirs')
+    print(torch.min(encoded_viewdirs), torch.max(encoded_viewdirs), torch.mean(encoded_viewdirs))
+    print('')
+
+    ffencoder = FourierEncoder(3, 10)
+    viewdirs_ffencoder = FourierEncoder(3, 4)
+
+    ffencoded_points = ffencoder(pts_flattened)
+    ffencoded_viewdirs = viewdirs_ffencoder(flattened_viewdirs)
+
+    print('Random Fourier Encoded Points')
+    print(ffencoded_points.shape)
+    print(torch.min(ffencoded_points), torch.max(ffencoded_points), torch.mean(ffencoded_points))
+    print('')
+
+    print(encoded_viewdirs.shape)
+    print('Random Fourier Encoded Viewdirs')
+    print(torch.min(ffencoded_viewdirs), torch.max(ffencoded_viewdirs), torch.mean(ffencoded_viewdirs))
+    print('')

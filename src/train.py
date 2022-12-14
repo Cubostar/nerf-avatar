@@ -81,6 +81,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     filepath = input("Enter filepath to load data: ")
+    savepath = input("Enter path to directory to save files: ")
     images, poses, focal = load_data(filepath)
 
     height, width = images.shape[1:3]
@@ -309,7 +310,7 @@ def main():
                 z_sample_hierarch = None
                 _ = plot_samples(z_sample_strat, z_sample_hierarch, ax=ax[3])
             ax[3].margins(0)
-            plt.show()
+            plt.savefig(savepath + str(i))
 
         # Check PSNR for issues and stop if any are found.
         if i == warmup_iters - 1:
@@ -320,6 +321,10 @@ def main():
                 if warmup_stopper is not None and warmup_stopper(i, psnr):
                     print(f'Train PSNR flatlined at {psnr} for {warmup_stopper.patience} iters. Stopping...')
                     return False, train_psnrs, val_psnrs
+
+    torch.save(model.state_dict(), savepath + "\\model.pt")
+    if fine_model is not None:
+        torch.save(model.state_dict(), savepath + "\\fine_model.pt")
 
 
 
