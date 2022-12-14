@@ -8,6 +8,7 @@ from preprocessing import *
 from forward import *
 from rendering import *
 
+PATH = 'trained_models/vanilla_nerf.pt'
 
 def plot_samples(
     z_vals: torch.Tensor,
@@ -129,7 +130,7 @@ def main():
     lr = 5e-4  # Learning rate
 
     # Training
-    n_iters = 10000
+    n_iters = 1000
     batch_size = 2**14          # Number of rays per gradient step (power of 2)
     one_image_per_step = True   # One image per gradient step (disables batching)
     chunksize = 2**14           # Modify as needed to fit in GPU memory
@@ -320,7 +321,7 @@ def main():
                 if warmup_stopper is not None and warmup_stopper(i, psnr):
                     print(f'Train PSNR flatlined at {psnr} for {warmup_stopper.patience} iters. Stopping...')
                     return False, train_psnrs, val_psnrs
-
+    torch.save(model.state_dict(), PATH)
 
 
 if __name__ == '__main__':
