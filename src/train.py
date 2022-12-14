@@ -78,7 +78,8 @@ class EarlyStopping:
 
 
 def main():
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     filepath = input("Enter filepath to load data: ")
     images, poses, focal = load_data(filepath)
 
@@ -88,11 +89,11 @@ def main():
     n_training = 100
     testimg_idx = 101
 
-    testimg = torch.from_numpy(images[testimg_idx])#.to(device)
-    testpose = torch.from_numpy(poses[testimg_idx])#.to(device)
-    poses = torch.from_numpy(poses)#.to(device)
-    focal = torch.from_numpy(focal)#.to(device)
-    images = torch.from_numpy(images[:n_training])#.to(device)
+    testimg = torch.from_numpy(images[testimg_idx]).to(device)
+    testpose = torch.from_numpy(poses[testimg_idx]).to(device)
+    poses = torch.from_numpy(poses).to(device)
+    focal = torch.from_numpy(focal).to(device)
+    images = torch.from_numpy(images[:n_training]).to(device)
 
 
     """
@@ -174,12 +175,12 @@ def main():
     # Models
     model = NeRF(encoder.d_output, n_layers=n_layers, d_filter=d_filter, skip=skip,
                 d_viewdirs=d_viewdirs)
-    #model.to(device)
+    model.to(device)
     model_params = list(model.parameters())
     if use_fine_model:
         fine_model = NeRF(encoder.d_output, n_layers=n_layers, d_filter=d_filter, skip=skip,
                             d_viewdirs=d_viewdirs)
-        #fine_model.to(device)
+        fine_model.to(device)
         model_params = model_params + list(fine_model.parameters())
     else:
         fine_model = None
@@ -217,11 +218,11 @@ def main():
         if one_image_per_step:
             # Randomly pick an image as the target.
             target_img_idx = np.random.randint(images.shape[0])
-            target_img = images[target_img_idx]#.to(device)
+            target_img = images[target_img_idx].to(device)
             if center_crop and i < center_crop_iters:
                 target_img = crop_center(target_img)
             height, width = target_img.shape[:2]
-            target_pose = poses[target_img_idx]#.to(device)
+            target_pose = poses[target_img_idx].to(device)
             rays_o, rays_d = get_rays(height, width, focal, target_pose)
             rays_o = rays_o.reshape([-1, 3])
             rays_d = rays_d.reshape([-1, 3])
