@@ -1,7 +1,6 @@
-import numpy as np
 import torch
 from torch import nn
-from typing import Optional, Tuple, List, Union, Callable
+from typing import Optional, Tuple
 
 
 
@@ -136,7 +135,7 @@ if __name__ == '__main__':
     rays_o = rays_o.view([-1, 3])
     rays_d = rays_d.view([-1, 3])
 
-    pts, z_vals = stratified_sampling(rays_o, rays_d, 0.2, 0.6, 8)
+    pts, z_vals = sample_stratified(rays_o, rays_d, 0.2, 0.6, 8)
 
     encoder = PositionalEncoder(3, 10)
     viewdirs_encoder = PositionalEncoder(3, 4)

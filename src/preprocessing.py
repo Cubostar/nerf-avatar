@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from typing import Optional, Tuple, List, Union, Callable
+from typing import Optional, Tuple
 import torch
 
 
@@ -70,7 +70,7 @@ def get_rays(
 
 
 
-def stratified_sampling(
+def sample_stratified(
     rays_o: torch.Tensor,
     rays_d: torch.Tensor,
     near: float,
@@ -128,6 +128,6 @@ if __name__ == '__main__':
     rays_o = rays_o.view([-1, 3])
     rays_d = rays_d.view([-1, 3])
 
-    pts, z_vals = stratified_sampling(rays_o, rays_d, 0.2, 0.6, 8)
+    pts, z_vals = sample_stratified(rays_o, rays_d, 0.2, 0.6, 8)
     print(pts.shape)
     print(z_vals.shape)
